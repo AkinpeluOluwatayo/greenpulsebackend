@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: greenpulse-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://aws-0-eu-west-1.pooler.supabase.com:5432/postgres}
+    username: ${DATABASE_USERNAME:postgres.gvdtdiwwkjmyofjoyayq}
+    password: ${DATABASE_PASSWORD:Akinpelu1234}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # MQTT Configuration
+  integration:
+    mqtt:
+      broker-url: ${MQTT_BROKER_URL:wss://broker.emqx.io:8084/mqtt}
+      client-id: greenpulse-backend
+      default-topic: elroi/farms/+/telemetry
+
+# JWT Configuration
+greenpulse:
+  jwt:
+    secret: ${JWT_SECRET:your-highly-secure-long-secret-key-at-least-32-chars}
+    expiration: 86400000 # 24 hours
+
+logging:
+  level:
+    org.springframework.security: INFO
+    com.greenpulse.api: DEBUG
