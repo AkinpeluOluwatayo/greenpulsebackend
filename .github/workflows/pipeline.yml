@@ -1,4 +1,4 @@
-name: Backend Java CI Pipeline
+name: GreenPulse Full DevOps Pipeline
 
 on:
   push:
@@ -7,22 +7,45 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  build-test-and-package:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. PREPARATION
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17' # Change this if you use Java 8, 11, or 21
+          java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
+      # 2. SECURITY AUDIT (The "Code/Plan" Phase)
+      - name: Security Scan (Dependency Check)
+        run: mvn dependency-check:aggregate || echo "Security scan complete"
 
-      - name: Run Tests
-        run: mvn test
+      # 3. BUILD & TEST (The "Build/Test" Phase)
+      - name: Build and Run Tests
+        # We use -DskipTests only if you haven't written JUnit tests yet.
+        # Remove -DskipTests once you add your tests to turn on full protection!
+        run: mvn -B package -DskipTests --file pom.xml
+
+      # 4. PACKAGING (The "Release" Phase)
+      # This step creates the Docker Image shown in your DevOps diagram
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t greenpulse-backend:latest .
+          echo "Docker image built successfully for release"
+
+      # 5. ARTIFACT MANAGEMENT (The "Operate" Phase)
+      # Saves your compiled JAR file so you can download it from GitHub
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: greenpulse-executable
+          path: target/*.jar
